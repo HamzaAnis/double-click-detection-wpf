@@ -13,6 +13,12 @@ namespace DoubleClickDetection
 {
     public partial class Form1 : Form
     {
+        [DllImport("user32.dll")]
+        static extern uint GetDoubleClickTime();
+        private void Form1_FormClosing(object sender, FormClosingEventArgs e)
+        {
+            Application.Exit();
+        }
         public Form1()
         {
             InitializeComponent();
@@ -29,11 +35,6 @@ namespace DoubleClickDetection
             mh.MouseDownEvent += mh_MouseDownEvent;
             mh.MouseUpEvent += mh_MouseUpEvent;
 
-        }
-
-        private void button1_Click(object sender, EventArgs e)
-        {
-            var bmp = SnippingTool.Snip();
         }
         private void mh_MouseDownEvent(object sender, MouseEventArgs e)
         {
@@ -62,10 +63,14 @@ namespace DoubleClickDetection
         }
         private void mh_MouseClickEvent(object sender, MouseEventArgs e)
         {
-            //MessageBox.Show(e.X + "-" + e.Y);
             if (e.Button == MouseButtons.Left)
             {
-                string sText = "(" + e.X.ToString() + "," + e.Y.ToString() + ")";
+                string sText = "(" + e.X.ToString() + "," + e.Y.ToString() +","+e.Clicks+ ")";
+                Console.Out.WriteLine("Double Click time is "+ GetDoubleClickTime().ToString());
+            }
+            if (e.Button == MouseButtons.Right)
+            {
+                string sText = "(" + e.X.ToString() + "," + e.Y.ToString() + "," + e.Clicks + ")";
                 Console.Out.WriteLine(sText);
             }
         }
@@ -83,17 +88,11 @@ namespace DoubleClickDetection
         }
         protected override void OnMouseDown(MouseEventArgs e)
         {
-            if (e.Button == MouseButtons.Left && e.Clicks == 2)
-            {
-                Console.Out.WriteLine("DOUBLE CLICKED");
-                Point coord = Cursor.Position;
-                Console.Out.WriteLine("Position: " + coord);
-            }
+           
         }
 
         private void locationSelectToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            Console.WriteLine("YES");
         }
         private void Form1_Load(object sender, EventArgs e)
         {
@@ -102,6 +101,7 @@ namespace DoubleClickDetection
 
         private void button1_Click_1(object sender, EventArgs e)
         {
+                        var bmp = SnippingTool.Snip();
 
         }
     }
@@ -195,6 +195,11 @@ namespace DoubleClickDetection
                         case WM_LBUTTONDOWN:
                             button = MouseButtons.Left;
                             clickCount = 1;
+                            MouseDownEvent(this, new MouseEventArgs(button, clickCount, point.X, point.Y, 0));
+                            break;
+                        case WM_LBUTTONDBLCLK:
+                            button = MouseButtons.Left;
+                            clickCount = 2;
                             MouseDownEvent(this, new MouseEventArgs(button, clickCount, point.X, point.Y, 0));
                             break;
                         case WM_RBUTTONDOWN:
