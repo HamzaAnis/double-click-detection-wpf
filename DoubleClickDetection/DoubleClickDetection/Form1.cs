@@ -13,6 +13,12 @@ namespace DoubleClickDetection
 {
     public partial class Form1 : Form
     {
+        double mouseVerticalPosition;
+        double mouseHorizontalPosition;
+        DateTime clickedTime;
+        bool IsSecondClick = false;
+        System.Diagnostics.Stopwatch watch;
+
         [DllImport("user32.dll")]
         static extern uint GetDoubleClickTime();
         private void Form1_FormClosing(object sender, FormClosingEventArgs e)
@@ -38,6 +44,30 @@ namespace DoubleClickDetection
         }
         private void mh_MouseDownEvent(object sender, MouseEventArgs e)
         {
+            if (IsSecondClick)
+            {
+                watch.Stop();
+                Int64 elapsedTime = watch.ElapsedMilliseconds;
+                UInt32 doubleClickTime = GetDoubleClickTime();
+                Console.Out.WriteLine("Elapsed time is: " + elapsedTime);
+                Console.Out.WriteLine("Double Click time is " + GetDoubleClickTime().ToString());
+                IsSecondClick = false;
+                if ((e.Location.Y - mouseVerticalPosition == 0) & e.Location.X - mouseHorizontalPosition == 0 & elapsedTime<doubleClickTime)
+                {
+                    Console.Out.WriteLine("Double Click Detected");
+                }
+            }
+            else
+            {
+                IsSecondClick = true;
+                clickedTime = DateTime.Now;
+                mouseVerticalPosition = e.Location.Y;
+                mouseHorizontalPosition = e.Location.X;
+                watch = System.Diagnostics.Stopwatch.StartNew();
+
+
+            }
+
             if (e.Button == MouseButtons.Left)
             {
                 Console.Out.WriteLine("Left Button Press\n");
@@ -66,7 +96,7 @@ namespace DoubleClickDetection
             if (e.Button == MouseButtons.Left)
             {
                 string sText = "(" + e.X.ToString() + "," + e.Y.ToString() +","+e.Clicks+ ")";
-                Console.Out.WriteLine("Double Click time is "+ GetDoubleClickTime().ToString());
+                //Console.Out.WriteLine("Double Click time is "+ GetDoubleClickTime().ToString());
             }
             if (e.Button == MouseButtons.Right)
             {
