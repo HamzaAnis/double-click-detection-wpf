@@ -6,7 +6,7 @@ using System.Runtime.InteropServices;
 // set of attributes. Change these attribute values to modify the information
 // associated with an assembly.
 [assembly: AssemblyTitle("DoubleClickDetection")]
-[assembly: AssemblyDescription("")]
+[assembly: AssemblyDescription("This app let you select te area on the screen and when the detection is start it plays a notification sound.                                                                         Steps to start:                                                               1) Select area on screen by clicking select button      2) Click start button")]
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("")]
 [assembly: AssemblyProduct("DoubleClickDetection")]

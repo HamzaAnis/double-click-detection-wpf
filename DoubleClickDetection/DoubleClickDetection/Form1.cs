@@ -32,9 +32,13 @@ namespace DoubleClickDetection
             handlerinit();
         }
 
+        public string ResizeMode { get; private set; }
+
         MouseHook mh;
         private void handlerinit()
         {
+            this.MaximizeBox = false;
+            this.FormBorderStyle = FormBorderStyle.FixedSingle;
             mh = new MouseHook();
             mh.SetHook();
             mh.MouseMoveEvent += mh_MouseMoveEvent;
@@ -55,9 +59,19 @@ namespace DoubleClickDetection
                 {
                     if (isStart)
                     {
-                        if (e.Location.X<=rectangle.Location.X+rectangle.Width&& e.Location.Y <= rectangle.Location.Y + rectangle.Height)
+                        if (e.Location.X <= rectangle.Location.X + rectangle.Width && e.Location.Y <= rectangle.Location.Y + rectangle.Height)
                         {
-                            MessageBox.Show("It is pressed inside the area");
+                            notifyIcon1.ShowBalloonTip(1000, "Double Click Detection", "Double click in the area selected!!", ToolTipIcon.Info);
+                            try
+                            {
+                                WMPLib.WindowsMediaPlayer wplayer = new WMPLib.WindowsMediaPlayer();
+                                wplayer.URL = @"Sound.mp3";
+                                wplayer.controls.play();
+                            }
+                            catch
+                            {
+                                MessageBox.Show("Please place Sound.mp3 in same location as this folder.");
+                            }
                         }
                     }
                 }
@@ -136,7 +150,7 @@ namespace DoubleClickDetection
 
         private void button1_Click_1(object sender, EventArgs e)
         {
-             rectangle = SnippingTool.Snip();
+            rectangle = SnippingTool.Snip();
 
         }
 
@@ -144,7 +158,8 @@ namespace DoubleClickDetection
         {
             if (rectangle == Rectangle.Empty)
             {
-                MessageBox.Show("Please select the area to detect");
+                MessageBox.Show("Please select the area to detect!!");
+
             }
             else
             {
@@ -155,24 +170,72 @@ namespace DoubleClickDetection
                 Console.Out.WriteLine("Location y is: " + rectangle.Location.Y);
                 Console.Out.WriteLine("Location x is: " + rectangle.Location.X);
                 */
-                MessageBox.Show("Detection started");
                 isStart = true;
+                notifyIcon1.Visible = true;
+                notifyIcon1.ShowBalloonTip(1000, "Double Click Detection", "Detection Started!!!", ToolTipIcon.Info);
             }
         }
 
         private void showToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            Console.Out.WriteLine("Show this");
+            this.showT();
         }
 
         private void stopToolStripMenuItem_Click(object sender, EventArgs e)
         {
             isStart = false;
+            notifyIcon1.ShowBalloonTip(1000, "Double Click Detection", "Detection Stopped!!!", ToolTipIcon.Info);
         }
 
         private void hideToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            Console.Out.WriteLine("Hiding this");
+
+            hideT();
+
+
+        }
+
+        private void Form1_Resize(object sender, EventArgs e)
+        {
+            if (WindowState != FormWindowState.Normal)
+            {
+                this.hideT();
+            }
+        }
+
+        public void hideT()
+        {
+            this.Hide();
+            ShowIcon = false;
+            notifyIcon1.Visible = true;
+            ShowInTaskbar = false;
+            notifyIcon1.ShowBalloonTip(1000,"Double Click Detection","Application Minimized",ToolTipIcon.Info);
+            
+        }
+
+        public void showT()
+        {
+            this.Show();
+            ShowIcon = true;
+            ShowInTaskbar = true;
+            WindowState = FormWindowState.Normal;
+            notifyIcon1.ShowBalloonTip(1000, "Double Click Detection", "Application Maximized", ToolTipIcon.Info);
+
+        }
+        private void notifyIcon1_MouseDoubleClick(object sender, MouseEventArgs e)
+        {
+                        this.showT();
+        }
+
+        private void exitToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            Application.Exit();
+        }
+
+        private void aboutToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            AboutBox1 ab = new AboutBox1();
+            ab.Show();
         }
     }
 
@@ -229,10 +292,10 @@ namespace DoubleClickDetection
             int y2 = Math.Max(e.Y, pntStart.Y);
             rcSelect = new Rectangle(x1, y1, x2 - x1, y2 - y1);
 
-/*            Console.Out.WriteLine("Width is: " + rcSelect.Width);
-            Console.Out.WriteLine("Height is: " + rcSelect.Height);
-            Console.Out.WriteLine("Location is: " + rcSelect.Location.ToString());
-*/
+            /*            Console.Out.WriteLine("Width is: " + rcSelect.Width);
+                        Console.Out.WriteLine("Height is: " + rcSelect.Height);
+                        Console.Out.WriteLine("Location is: " + rcSelect.Location.ToString());
+            */
             this.Invalidate();
         }
         protected override void OnMouseUp(MouseEventArgs e)
