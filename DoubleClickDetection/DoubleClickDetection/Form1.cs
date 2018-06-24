@@ -18,12 +18,13 @@ namespace DoubleClickDetection
         double mouseHorizontalPosition;
         DateTime clickedTime;
         bool IsSecondClick = false;
-        System.Diagnostics.Stopwatch watch;
+        //System.Diagnostics.Stopwatch watch;
         Rectangle rectangle;
         bool isStart = false;
         UInt32 doubleClickTime;
         [DllImport("user32.dll")]
         static extern uint GetDoubleClickTime();
+        WMPLib.WindowsMediaPlayer wplayer;
         private void Form1_FormClosing(object sender, FormClosingEventArgs e)
         {
             Application.Exit();
@@ -39,11 +40,13 @@ namespace DoubleClickDetection
         MouseHook mh;
         private void handlerinit()
         {
+            wplayer = new WMPLib.WindowsMediaPlayer();
+
             this.MaximizeBox = false;
             this.FormBorderStyle = FormBorderStyle.FixedSingle;
             mh = new MouseHook();
             mh.SetHook();
-           mh.MouseMoveEvent += mh_MouseMoveEvent;
+            mh.MouseMoveEvent += mh_MouseMoveEvent;
             mh.MouseClickEvent += mh_MouseClickEvent;
             mh.MouseDownEvent += mh_MouseDownEvent;
             mh.MouseUpEvent += mh_MouseUpEvent;
@@ -55,10 +58,11 @@ namespace DoubleClickDetection
         {
             if (IsSecondClick)
             {
+                //                watch.Stop();
+                Int64 elapsedTime = (clickedTime.ToBinary() - DateTime.Now.ToBinary()) / -10000;
                 IsSecondClick = false;
-                var etime = clickedTime - DateTime.Now;
-                Console.WriteLine("Elapsed time: " + etime.TotalMilliseconds);
-                if ((e.Location.Y - mouseVerticalPosition == 0) & e.Location.X - mouseHorizontalPosition == 0 & etime.TotalMilliseconds < doubleClickTime)
+                Console.WriteLine("Elapsed time: " + elapsedTime);
+                if ((e.Location.Y - mouseVerticalPosition == 0) & e.Location.X - mouseHorizontalPosition == 0 & elapsedTime < doubleClickTime)
                 {
                     Console.WriteLine("Entered in the if");
                     if (isStart)
@@ -72,20 +76,19 @@ namespace DoubleClickDetection
                         Console.Out.WriteLine("Current x position: " + e.Location.X);
                         Console.Out.WriteLine("Current y position: " + e.Location.Y);
                         Console.Out.WriteLine("Area X range is: " + rectangle.Location.X + " - " + (rectangle.Location.X + rectangle.Width));
-                        Console.Out.WriteLine("Area Y range is: " + rectangle.Location.Y + " - " + (rectangle.Location.Y + rectangle.Height)+"\n");
+                        Console.Out.WriteLine("Area Y range is: " + rectangle.Location.Y + " - " + (rectangle.Location.Y + rectangle.Height) + "\n");
 
-                        if (e.Location.X <= rectangle.Location.X + rectangle.Width && e.Location.Y <= rectangle.Location.Y + rectangle.Height)
+                        if (e.Location.X <= rectangle.Location.X + rectangle.Width && e.Location.X > rectangle.Location.X && e.Location.Y > rectangle.Location.Y && e.Location.Y <= rectangle.Location.Y + rectangle.Height)
                         {
                             try
                             {
                                 Console.WriteLine("Entered in the third if");
                                 // new Thread(() =>
                                 {
-                                    WMPLib.WindowsMediaPlayer wplayer = new WMPLib.WindowsMediaPlayer();
                                     wplayer.URL = @"Sound.mp3";
                                     wplayer.controls.play();
                                 }
-                              //  }).Start();
+                                //  }).Start();
                             }
                             catch
                             {
@@ -101,6 +104,9 @@ namespace DoubleClickDetection
                 clickedTime = DateTime.Now;
                 mouseVerticalPosition = e.Location.Y;
                 mouseHorizontalPosition = e.Location.X;
+                //watch = System.Diagnostics.Stopwatch.StartNew();
+
+
             }
             /*
             if (e.Button == MouseButtons.Left)
@@ -139,7 +145,7 @@ namespace DoubleClickDetection
                 string sText = "(" + e.X.ToString() + "," + e.Y.ToString() + "," + e.Clicks + ")";
                 Console.Out.WriteLine(sText);
             }*/
-            
+
         }
 
         private void mh_MouseMoveEvent(object sender, MouseEventArgs e)
@@ -189,6 +195,7 @@ namespace DoubleClickDetection
                 Console.Out.WriteLine("Location x is: " + rectangle.Location.X);
                 */
                 isStart = true;
+
                 notifyIcon1.Visible = true;
                 notifyIcon1.ShowBalloonTip(1000, "Double Click Detection", "Detection Started!!!", ToolTipIcon.Info);
             }
@@ -228,8 +235,8 @@ namespace DoubleClickDetection
             ShowIcon = false;
             notifyIcon1.Visible = true;
             ShowInTaskbar = false;
-            notifyIcon1.ShowBalloonTip(1000,"Double Click Detection","Application Minimized",ToolTipIcon.Info);
-            contextMenuStrip1.ShowItemToolTips = true ;
+            notifyIcon1.ShowBalloonTip(1000, "Double Click Detection", "Application Minimized", ToolTipIcon.Info);
+            contextMenuStrip1.ShowItemToolTips = true;
         }
 
         public void showT()
@@ -243,7 +250,7 @@ namespace DoubleClickDetection
         }
         private void notifyIcon1_MouseDoubleClick(object sender, MouseEventArgs e)
         {
-                        this.showT();
+            this.showT();
         }
 
         private void exitToolStripMenuItem_Click(object sender, EventArgs e)
@@ -269,7 +276,6 @@ namespace DoubleClickDetection
 
         private void startToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            Application.Exit();
         }
     }
 
