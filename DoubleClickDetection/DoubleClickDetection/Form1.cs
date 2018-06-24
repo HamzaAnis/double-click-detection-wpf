@@ -8,6 +8,7 @@ using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using System.Threading;
 
 namespace DoubleClickDetection
 {
@@ -20,6 +21,7 @@ namespace DoubleClickDetection
         System.Diagnostics.Stopwatch watch;
         Rectangle rectangle;
         bool isStart = false;
+        UInt32 doubleClickTime;
         [DllImport("user32.dll")]
         static extern uint GetDoubleClickTime();
         private void Form1_FormClosing(object sender, FormClosingEventArgs e)
@@ -41,11 +43,13 @@ namespace DoubleClickDetection
             this.FormBorderStyle = FormBorderStyle.FixedSingle;
             mh = new MouseHook();
             mh.SetHook();
-            mh.MouseMoveEvent += mh_MouseMoveEvent;
+           mh.MouseMoveEvent += mh_MouseMoveEvent;
             mh.MouseClickEvent += mh_MouseClickEvent;
             mh.MouseDownEvent += mh_MouseDownEvent;
             mh.MouseUpEvent += mh_MouseUpEvent;
             rectangle = Rectangle.Empty;
+            doubleClickTime = GetDoubleClickTime();
+
         }
         private void mh_MouseDownEvent(object sender, MouseEventArgs e)
         {
@@ -53,20 +57,36 @@ namespace DoubleClickDetection
             {
                 watch.Stop();
                 Int64 elapsedTime = watch.ElapsedMilliseconds;
-                UInt32 doubleClickTime = GetDoubleClickTime();
                 IsSecondClick = false;
+                Console.WriteLine("Elapsed time: " + elapsedTime);
                 if ((e.Location.Y - mouseVerticalPosition == 0) & e.Location.X - mouseHorizontalPosition == 0 & elapsedTime < doubleClickTime)
                 {
+                    Console.WriteLine("Entered in the if");
                     if (isStart)
                     {
+                        Console.WriteLine("Entered in the second if");
+
+                        Console.Out.WriteLine("Width is: " + rectangle.Width);
+                        Console.Out.WriteLine("Height is: " + rectangle.Height);
+                        Console.Out.WriteLine("Location x is: " + rectangle.Location.X);
+                        Console.Out.WriteLine("Location y is: " + rectangle.Location.Y);
+                        Console.Out.WriteLine("Current x position: " + e.Location.X);
+                        Console.Out.WriteLine("Current y position: " + e.Location.Y);
+                        Console.Out.WriteLine("Area X range is: " + rectangle.Location.X + " - " + (rectangle.Location.X + rectangle.Width));
+                        Console.Out.WriteLine("Area Y range is: " + rectangle.Location.Y + " - " + (rectangle.Location.Y + rectangle.Height)+"\n");
+
                         if (e.Location.X <= rectangle.Location.X + rectangle.Width && e.Location.Y <= rectangle.Location.Y + rectangle.Height)
                         {
-                            notifyIcon1.ShowBalloonTip(1000, "Double Click Detection", "Double click in the area selected!!", ToolTipIcon.Info);
                             try
                             {
-                                WMPLib.WindowsMediaPlayer wplayer = new WMPLib.WindowsMediaPlayer();
-                                wplayer.URL = @"Sound.mp3";
-                                wplayer.controls.play();
+                                Console.WriteLine("Entered in the third if");
+                                // new Thread(() =>
+                                {
+                                    WMPLib.WindowsMediaPlayer wplayer = new WMPLib.WindowsMediaPlayer();
+                                    wplayer.URL = @"Sound.mp3";
+                                    wplayer.controls.play();
+                                }
+                              //  }).Start();
                             }
                             catch
                             {
@@ -110,6 +130,7 @@ namespace DoubleClickDetection
             }*/
 
         }
+        int count = 0;
         private void mh_MouseClickEvent(object sender, MouseEventArgs e)
         {
             /*
@@ -122,12 +143,13 @@ namespace DoubleClickDetection
                 string sText = "(" + e.X.ToString() + "," + e.Y.ToString() + "," + e.Clicks + ")";
                 Console.Out.WriteLine(sText);
             }*/
+            
         }
 
         private void mh_MouseMoveEvent(object sender, MouseEventArgs e)
         {
-            int x = e.Location.X;
-            int y = e.Location.Y;
+            //int x = e.Location.X;
+            //int y = e.Location.Y;
             //Console.Out.WriteLine(x + "  " + y);
         }
 
@@ -178,6 +200,7 @@ namespace DoubleClickDetection
 
         private void showToolStripMenuItem_Click(object sender, EventArgs e)
         {
+            MessageBox.Show("Pressed");
             this.showT();
         }
 
@@ -210,7 +233,7 @@ namespace DoubleClickDetection
             notifyIcon1.Visible = true;
             ShowInTaskbar = false;
             notifyIcon1.ShowBalloonTip(1000,"Double Click Detection","Application Minimized",ToolTipIcon.Info);
-            
+            contextMenuStrip1.ShowItemToolTips = true ;
         }
 
         public void showT()
@@ -236,6 +259,21 @@ namespace DoubleClickDetection
         {
             AboutBox1 ab = new AboutBox1();
             ab.Show();
+        }
+
+        private void showToolStripMenuItem_Click_1(object sender, EventArgs e)
+        {
+            this.showT();
+        }
+
+        private void exitToolStripMenuItem1_Click(object sender, EventArgs e)
+        {
+            this.hideT();
+        }
+
+        private void startToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            Application.Exit();
         }
     }
 
@@ -426,7 +464,7 @@ namespace DoubleClickDetection
                             clickCount = 1;
                             MouseDownEvent(this, new MouseEventArgs(button, clickCount, point.X, point.Y, 0));
                             break;
-                        case WM_LBUTTONDBLCLK:
+                        /*case WM_LBUTTONDBLCLK:
                             button = MouseButtons.Left;
                             clickCount = 2;
                             MouseDownEvent(this, new MouseEventArgs(button, clickCount, point.X, point.Y, 0));
@@ -441,6 +479,7 @@ namespace DoubleClickDetection
                             clickCount = 1;
                             MouseDownEvent(this, new MouseEventArgs(button, clickCount, point.X, point.Y, 0));
                             break;
+                       */
                         case WM_LBUTTONUP:
                             button = MouseButtons.Left;
                             clickCount = 1;
