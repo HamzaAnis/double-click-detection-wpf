@@ -55,11 +55,10 @@ namespace DoubleClickDetection
         {
             if (IsSecondClick)
             {
-                watch.Stop();
-                Int64 elapsedTime = watch.ElapsedMilliseconds;
                 IsSecondClick = false;
-                Console.WriteLine("Elapsed time: " + elapsedTime);
-                if ((e.Location.Y - mouseVerticalPosition == 0) & e.Location.X - mouseHorizontalPosition == 0 & elapsedTime < doubleClickTime)
+                var etime = clickedTime - DateTime.Now;
+                Console.WriteLine("Elapsed time: " + etime.TotalMilliseconds);
+                if ((e.Location.Y - mouseVerticalPosition == 0) & e.Location.X - mouseHorizontalPosition == 0 & etime.TotalMilliseconds < doubleClickTime)
                 {
                     Console.WriteLine("Entered in the if");
                     if (isStart)
@@ -102,9 +101,6 @@ namespace DoubleClickDetection
                 clickedTime = DateTime.Now;
                 mouseVerticalPosition = e.Location.Y;
                 mouseHorizontalPosition = e.Location.X;
-                watch = System.Diagnostics.Stopwatch.StartNew();
-
-
             }
             /*
             if (e.Button == MouseButtons.Left)
